@@ -1,0 +1,72 @@
+Link to the work-in-progress pen right [here]().
+
+# Preface
+
+For the third and penultimate project in the line of "Data Visualization Projects", @freeCodeCamp challenges us to visualize data through a _heat map_. Data which contemplates the global land-surface temperature, as shown in the [example pen](https://codepen.io/freeCodeCamp/full/JEXgeY).
+
+The graph does seem to deviate from the previous challenges, which instead where quite similar to one another. That however doesn't remotely imply that the knowledge so far obtained and implemented can't be applied to the new task. By far.
+
+The way the data, axes and SVG are managed is much similar in all the different projects.
+
+# Data
+
+Before jumping in the user stories, I like to spend a few moments on the data which is to be displayed in the chart.
+
+This is available at the following [URL](https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/global-temperature.json):
+
+```text
+https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/global-temperature.json
+```
+
+The URL presents a JSON object, with two fields, for the `baseTemperature` and `monthlyVariance`.
+
+The first key holds a value which represent the tempeature throughout the analysed time-frame. It is a high level measure which summarises the entire visualization.
+
+The second key instead holds an array of several objects. One object for each month and therefore twelve objects for each year, for the period beginning in 1753 and ending in 2015.
+
+This is where the data for the actual graph lies, so the field warrants a tad more analysis.
+
+Each object in the array has three properties:
+- `year`, the four digits year;
+- `month`, the integer representing the month (1 for January, 2 for February and so on until 12 for December);
+- `variance`, for the difference in temperature with respect to the `baseTemperature` value. This is a float number with up to three digits after the decimal point. Merged with the `baseTemperature` value, it outputs the base temperature for the respective year and month.
+
+The data set is hence summed up. It is by far not a complex set of data, even if perhaps a trifle long.
+
+Regardless, the look-around was worth the extra time. Analysing the data helps already to create a plan regarding which values to include and how to practically access them.
+
+# User Stories
+
+For the project to pass all tests set by @freeCodeCamp, the project needs to fulfill a series of user stories, here summarised.
+
+- [ ] there exist a title with `id="title"`;
+- [ ] there exist a description with `id="description"`;
+- [ ] there exist axes with `id="x-axis"` and `id="y-axis"` respectively;
+- [ ] there exist `rect` elements with `class="cell"` for the different data points;
+- [ ] there exist at least 4 different fill colors;
+- [ ] each cell should carry three properties: `data-month`, `data-year`, `data-temp`, respectively holding information regarding the month, year and tempeature;
+- [ ] the dates in the attribute need to be within the range of the data;
+- [ ] each cell should be aligned to the corresponding month in the y-axis and the corresponding year in the x-axis;
+- [ ] tick labels on the y-axis need to display the name of the month, in full;
+- [ ] tick labels on the x-axis need to display the year, from 1754 and 2015;
+- [ ] there exist a legend with `id="legend"`;
+- [ ] the legend ought to contain `rect` elements. These should use at least 4 different fill colors;
+- [ ] upon hovering on the `rect` elements of the visualization, it is possible to see a tooltip with `id="tooltip"`, displaying additional data;
+- [ ] the tooltip should have a `data-year` attribute matching the attribute with the same name for the hovered area.
+
+# First Thoughts
+
+All in all, the different user stories paint a rather specific visualization. That being said, the same style used for the [previous]() [proejcts]() is here replicated for the overall design of the page.
+
+The different fill colors, as visible in the referenced pen, are to be included to describe in intensity the temperature. The intensity is matched by cold and hot colors, going from blue hues to red-hot picks. 
+
+The thresholds at which the fill colors are specified are an interesting measure. Indeed, the visualization can include the amounts specified in the example pen (2.8, 3.9 and so forth), but additional care can be included in selecting the most appropriate digits.
+
+From the actual perspective of completing the project though, a rough measure is computed from the average value of the measured temperature. Starting from 1.6 degrees the amount is doubled, tripled to consider the possible temperatures with selected hues.
+
+As I hinted previously, the project does look different from the previous data visualization. The rectangle elements included side by side seem to provide the most challenging aspect of the visualization, while the difference in color seems to be rather easy to implement.
+
+<!--
+# Update
+include this section upon hitting arbitrary milestones in the project (a road-block, the completion of the project)
+-->
