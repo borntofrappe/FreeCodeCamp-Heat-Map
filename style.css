@@ -1,0 +1,92 @@
+@import url("https://fonts.googleapis.com/css?family=Lato");
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  min-height: 100vh;
+  width: 100%;
+  font-family: 'Lato', sans-serif;
+  color: #eee;
+  background: #252525;
+}
+
+.container {
+  /* set the size of the container 
+  as the SVG defines only the viewbox attribute, the width spreads to fit the container's width
+  the height is also defined by the viewbox itself, to preserve the width to height ratio */
+  width: 85vw;
+  padding: 1rem;
+  margin: 2rem auto;
+  color: #252525;
+  background: #eee;
+  box-shadow: 6px 8px 0 #252525, 14px 14px 0 #eee;
+  /* include a simple animation which introduces the card from the bottom of the screen */
+  animation: introduceCard 1s cubic-bezier(.22,-0.3,.68,1.44) both;
+  position: relative;
+}
+.container h1#title {
+  font-size: 2rem;
+  text-transform: capitalize;
+  text-align: center;
+  margin: 1rem;
+  /* include a simple animation which introduces the title from the top of the screen, right before the card has finished animating */
+  animation: introduceElement 0.5s 0.8s cubic-bezier(.22,-0.3,.68,1.44) both;
+}
+.container h3#description {
+  text-align: center;
+  letter-spacing: 0.2rem;
+  text-transform: uppercase;
+  font-weight: 300;
+  /* include a simple animation which introduces the description from the top of the screen, right after the title */
+  animation: introduceElement 0.5s 0.8s cubic-bezier(.22,-0.3,.68,1.44) both;
+}
+.container svg {
+  animation: introduceElement 0.5s 0.8s cubic-bezier(.22,-0.3,.68,1.44) both;
+}
+.container svg g#legend text {
+  font-weight: 300;
+}
+
+/* define the animations to introduce page's contents
+the card is animated bottom up
+the elements (title, legend, svg) are animated top down  
+*/
+
+@keyframes introduceCard {
+  0% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes introduceElement {
+  0% {
+    transform: translateY(-20vh);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* on smaller screen sizes
+- reduce the font-size of the header and of the tooltip
+- hide the legend, which would otherwise overalp the scatter plot data */
+@media (max-width: 700px) {
+  .container h1#title {
+    font-size: 1.8rem;
+  }
+}
