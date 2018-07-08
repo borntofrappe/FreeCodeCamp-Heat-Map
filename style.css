@@ -31,7 +31,7 @@ body {
   text-transform: capitalize;
   text-align: center;
   margin: 1rem;
-  /* include a simple animation which introduces the title from the top of the screen, right before the card has finished animating */
+  /* include a simple animation which introduces the main header from the top of the screen, right before the card has finished animating */
   animation: introduceElement 0.5s 0.8s cubic-bezier(.22,-0.3,.68,1.44) both;
 }
 .container h3#description {
@@ -39,14 +39,12 @@ body {
   letter-spacing: 0.2rem;
   text-transform: uppercase;
   font-weight: 300;
-  /* include a simple animation which introduces the description from the top of the screen, right after the title */
+  /* include a simple animation which introduces the description from the top of the screen, alongside the main header */
   animation: introduceElement 0.5s 0.8s cubic-bezier(.22,-0.3,.68,1.44) both;
 }
 .container svg {
+  /* include a simple animation which introduces the svg from the top of the screen, right after the headers */
   animation: introduceElement 0.5s 0.8s cubic-bezier(.22,-0.3,.68,1.44) both;
-}
-.container svg g#legend text {
-  font-weight: 300;
 }
 
 /* define the animations to introduce page's contents
@@ -81,12 +79,14 @@ the elements (title, legend, svg) are animated top down
   }
 }
 
-
 /* on smaller screen sizes
-- reduce the font-size of the header and of the tooltip
-- hide the legend, which would otherwise overalp the scatter plot data */
+- reduce the font-size of the headers
+*/
 @media (max-width: 700px) {
   .container h1#title {
     font-size: 1.8rem;
+  }
+  .container h3#description {
+    font-size: 1.2rem;
   }
 }
