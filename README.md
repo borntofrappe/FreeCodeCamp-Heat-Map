@@ -1,4 +1,4 @@
-<!-- Link to the work-in-progress pen right [here](). -->
+Link to the work-in-progress pen right [here](https://codepen.io/borntofrappe/pen/qKeGLM).
 
 # Preface
 
@@ -54,9 +54,25 @@ For the project to pass all tests set by @freeCodeCamp, the project needs to ful
 
 - [x] each cell should carry three properties: `data-month`, `data-year`, `data-temp`, respectively holding information regarding the month, year and tempeature;
 
-- [x] the dates in the attribute need to be within the range of the data;
+- [ ] the dates in the attribute need to be within the range of the data;
 
-- [x] each cell should be aligned to the corresponding month in the y-axis and the corresponding year in the x-axis;
+<!-- 
+// FAILED TEST
+
+The "data-month", "data-year" of each cell should be within the range of the data. 
+
+AssertionError: data-month should be at most 11: expected '12' to be at most 11
+-->
+
+- [ ] each cell should be aligned to the corresponding month in the y-axis and the corresponding year in the x-axis;
+
+<!-- 
+// FAILED TEST
+
+My heat map should have cells that align with the corresponding month on the y-axis.
+TypeError: Cannot read property 'length' of null 
+-->
+
 
 - [x] tick labels on the y-axis need to display the name of the month, in full;
 
