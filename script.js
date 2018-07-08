@@ -2,7 +2,7 @@
  * select the element in which to plot the data visualization
  * include a title and a description through header elements 
  * include the frame of an SVG canvas, in which to draw the data as it is queried
- * include a legend through rect elements 
+ * include a legend through rect elements (the legend is here included following the SVG canvas as it is drawn with SVG elements, in the canvas itself)
  * define the scales for the horizontal and vertical axes
  * define the range for both axes. These rely on the width and height values of the SVG and can be set prior to retrieving the data
  */
@@ -29,17 +29,17 @@ const margin = {
   top: 20,
   right: 20,
   bottom: 20,
-  // include a larger margin to the left as to show the values of minutes and seconds on the vertical axis
+  // include a larger margin to the left as to show the full name of the months on the vertical axis
   left: 50
 }
 
-// define width and height measure deducting the arbitrary values by the respective margins
+// define width and height measure deducting the arbitrary values of the respective margins
 // this allows to later reference the width and height values and have them refer to the area inside of the SVG canvas, where the elements are not cropped out
 const width = 800 - margin.left - margin.right,
-      height = 500 - margin.top - margin.bottom;
+      height = 400 - margin.top - margin.bottom;
 
 // include an SVG with a viewbox attribute dictating the width to height ratio
-// the width property is included in the stylesheet and the height is included by proxy through the ratio defined by the viewbox
+// the width property is included in the stylesheet and the height is included by proxy through the ratio defined by the viewbox itself
 const containerCanvas = container
                           .append("svg")
                           // by adding the respective margins, the SVG canvas assumes the dimensions defined by the arbitrary values (800, 400)
@@ -54,66 +54,83 @@ const canvasContents = containerCanvas
 
 // LEGEND
 // for the legend include rectangle elements with different fill color
-// as the legend makes use of SVG syntax, the element is included _after_ the SVG has been included in the page, and the element is appended to the SVG itself
+// as the legend makes use of SVG syntax, the element is included _after_ the SVG has been included in the page
+// the legend is appended to the SVG itself
 
+// append the legend as a group element, positioned in the top right of the SVG canvas
 const legend = containerCanvas
                 .append("g")
                 .attr("id", "legend")
                 .attr("transform", `translate(${width}, ${margin.top})`);
 
+// define in an object two arrays for the values of the legend and the size of the rectangle elemets
+// an array describing the colors of each rect element
+// an array escribing the values
 const legendValues = {
+    // the array are sorted from warmest color/highest value to coldest color/lowest value
     fillColors: ["#e83a30", "#ee6d66", "#f4a09c", "#faddd1", "#a39cf4", "#7166ee", "#4030e8"],
-    meaning: [11.2, 9.6, 8, 6.4, 4.8, 3.2, 1.6]
+    meaning: [11.2, 9.6, 8, 6.4, 4.8, 3.2, 1.6],
+    rectSize: 30
 }
+
+// in the group element which represents the legend apped one rectangle element for each fill color
 legend
     .selectAll("rect")
     .data(legendValues.fillColors)
     .enter()
     .append("rect")
-    .attr("width", 40)
-    .attr("height", 40)
-    .attr("x", (d, i) => i*-40)
+    // size the rectangle elements arbitrarily
+    .attr("width", legendValues.rectSize)
+    .attr("height", legendValues.rectSize)
+    // position each rectangle elements to the left of the previous one
+    // as the group element is positioned at the end of the SVG canvas, this allows to draw all rectangle inside of the canvas and ending at the precise spot described by the group element
+    .attr("x", (d, i) => i*-legendValues.rectSize)
+    // position the rectangle elements at the top of the svg canvas
     .attr("y", 0)
+    // give each rectangle element a color as specified by the array of fillColors
     .attr("fill", (d, i) => legendValues.fillColors[i]);
 
+// with text elements include text below each rectangle element of the legend
 legend 
     .selectAll("text")
     .data(legendValues.meaning)
     .enter()
     .append("text")
-    .attr("x", (d, i) => i*-40)
-    .attr("y", 55)
-    .text((d, i) => legendValues.meaning[i]);
+    // arrange the text elements horizontally, just like the rectangle elements, and vertically, below the rectangle elements themselves
+    .attr("x", (d, i) => i*-legendValues.rectSize)
+    .attr("y", legendValues.rectSize + 15)
+    .style("font-size", "0.7rem")
+    // include the text specified by the array of values
+    .text((d, i) => legendValues.meaning[i] + "°");
 
 
 // SCALES
 // for the horizontal scale include a time scale
-// for the range (where the data will be displayed as output), include values from 0 up to the width
+// for its range (where the data will be displayed as output), include values from 0 up to the width
 const xScale = d3
                 .scaleTime()
                 .range([0, width]);
 
 // for the vartical scale include another time scale
-// since the data points are set to be drawn with the smallest values on top, the range is not reversed
+// this one displayes the full name of each month, with January at the top; since each subsequent month is included below the previous one, the range is not reversed
 // the smallest values will be therefore at the top and the biggest values at the bottom (as the SVG coordinate system works top down) 
 const yScale = d3
                 .scaleTime()
-                .range([0, height]);
+                // deduct the height by the height value of the legend, to avoid overlap
+                .range([0, height - 55]);
 
-// define parse functions to properly format the data passed through the array 
-const parseTimeMonth = d3
-                    // 1754-01
+// define a parse function to properly format the data passed in with the request 
+// the date object will be retrieved from a concatenation of the full year (such as 1754) followed by a hyphen and the digit for the month (such as 10)
+const parseTime = d3
+                    // beware: the %m format represents a zero-padded number for the month (01,02 and so forth)
+                    // as the month in the data array is not zero-padded (1,2,), you may need some adjustment
                     .timeParse("%Y-%m");
-
-const parseTimeYear = d3
-                    // 1754
-                    .timeParse("%Y");
 
 
 /** DATA
  * create an instance of an XMLHttpRequest object, to retrieve the data at the provided URL
  * upon receiving the data, set the domain of the scales and create the connected axes
- * plot the chart by including circle elements in the SVG
+ * plot the chart by including rectangle elements in the SVG
  * include a tooltip through a div (the tooltip should appear and disappear on the basis of the mouseenter and mouseout events, on the circle elements)
  */
 
@@ -124,7 +141,7 @@ const request = new XMLHttpRequest();
 request.open("GET", URL, true);
 request.send();
 // on load call a function to draw the scatter plot 
-// pass as argument the array containing the (35) objects
+// pass as argument the object containing the two values, one of which the data array with 3000+ measurements
 request.onload = function() {
     let json = JSON.parse(request.responseText);
     drawHeatMap(json);
