@@ -1,4 +1,4 @@
-<!-- Link to the work-in-progress pen right [here](). -->
+Link to the work-in-progress pen right [here](https://codepen.io/borntofrappe/pen/qKeGLM).
 
 # Preface
 
@@ -46,29 +46,45 @@ For the project to pass all tests set by @freeCodeCamp, the project needs to ful
 
 - [x] there exist a description with `id="description"`;
 
-- [ ] there exist axes with `id="x-axis"` and `id="y-axis"` respectively;
+- [x] there exist axes with `id="x-axis"` and `id="y-axis"` respectively;
 
-- [ ] there exist `rect` elements with `class="cell"` for the different data points;
+- [x] there exist `rect` elements with `class="cell"` for the different data points;
 
 - [x] there exist at least 4 different fill colors;
 
-- [ ] each cell should carry three properties: `data-month`, `data-year`, `data-temp`, respectively holding information regarding the month, year and tempeature;
+- [x] each cell should carry three properties: `data-month`, `data-year`, `data-temp`, respectively holding information regarding the month, year and tempeature;
 
 - [ ] the dates in the attribute need to be within the range of the data;
 
+<!-- 
+// FAILED TEST
+
+The "data-month", "data-year" of each cell should be within the range of the data. 
+
+AssertionError: data-month should be at most 11: expected '12' to be at most 11
+-->
+
 - [ ] each cell should be aligned to the corresponding month in the y-axis and the corresponding year in the x-axis;
 
-- [ ] tick labels on the y-axis need to display the name of the month, in full;
+<!-- 
+// FAILED TEST
 
-- [ ] tick labels on the x-axis need to display the year, from 1754 and 2015;
+My heat map should have cells that align with the corresponding month on the y-axis.
+TypeError: Cannot read property 'length' of null 
+-->
+
+
+- [x] tick labels on the y-axis need to display the name of the month, in full;
+
+- [x] tick labels on the x-axis need to display the year, from 1754 and 2015;
 
 - [x] there exist a legend with `id="legend"`;
 
 - [x] the legend ought to contain `rect` elements. These should use at least 4 different fill colors;
 
-- [ ] upon hovering on the `rect` elements of the visualization, it is possible to see a tooltip with `id="tooltip"`, displaying additional data;
+- [x] upon hovering on the `rect` elements of the visualization, it is possible to see a tooltip with `id="tooltip"`, displaying additional data;
 
-- [ ] the tooltip should have a `data-year` attribute matching the attribute with the same name for the hovered area.
+- [x] the tooltip should have a `data-year` attribute matching the attribute with the same name for the hovered area.
 
 # First Thoughts
 
