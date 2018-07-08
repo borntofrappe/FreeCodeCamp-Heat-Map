@@ -30,7 +30,7 @@ const margin = {
   right: 20,
   bottom: 20,
   // include a larger margin to the left as to show the full name of the months on the vertical axis
-  left: 50
+  left: 60
 }
 
 // define width and height measure deducting the arbitrary values of the respective margins
@@ -111,20 +111,19 @@ const xScale = d3
                 .scaleTime()
                 .range([0, width]);
 
-// for the vartical scale include another time scale
-// this one displayes the full name of each month, with January at the top; since each subsequent month is included below the previous one, the range is not reversed
-// the smallest values will be therefore at the top and the biggest values at the bottom (as the SVG coordinate system works top down) 
+// for the vartical scale include a band scale (used to display discrete values, evenly spaced in the axis)
+// the discrete values are stored in an array describing the months of the year (from Jan to Dec)
+// as the months are introduced in order, there's no need to reverse the range 
+
+// include a margin equal to the size of the legend, as to avoid overlapping between the SVG heat map and the legend
+let mapMarginTop = 55;
 const yScale = d3
-                .scaleTime()
-                // deduct the height by the height value of the legend, to avoid overlap
-                .range([0, height - 55]);
+                .scaleBand()
+                .range([mapMarginTop, height]);
 
 // define a parse function to properly format the data passed in with the request 
-// the date object will be retrieved from a concatenation of the full year (such as 1754) followed by a hyphen and the digit for the month (such as 10)
-const parseTime = d3
-                    // beware: the %m format represents a zero-padded number for the month (01,02 and so forth)
-                    // as the month in the data array is not zero-padded (1,2,), you may need some adjustment
-                    .timeParse("%Y-%m");
+const parseTimeYear = d3
+                        .timeParse("%Y");
 
 
 /** DATA
@@ -144,22 +143,152 @@ request.send();
 // pass as argument the object containing the two values, one of which the data array with 3000+ measurements
 request.onload = function() {
     let json = JSON.parse(request.responseText);
-    drawHeatMap(json);
+    drawHeatMap(json.monthlyVariance);
 }
 
 function drawHeatMap(data) {
     /**
-     * data is an object with two fields
-     * data.baseTemperature; a single float value for the presumably global average
-     * data.monthlyVariance; an array nesting multiple objects with the actual data
+     * json is an object with two fields
+     * json.baseTemperature; a single float value for the presumably global average
+     * json.monthlyVariance; an array nesting multiple objects with the actual data
      * 
-     * each data.monthlyVariance[i] has three keys
-     *  data.monthlyVariance[i].year; a 4 digit value
-     *  data.monthlyVariance[i].month; a digit for the month (1 to 12, without zero-padding the single-digit numbers)
-     *  data.monthlyVariance[i].variance; a float describing the discrepancy between the measurement and the baseTemperature value
-     *  
+     * the XMLHttpRequest passes as argument this last field, the array of objects
+     * 
+     *  data has therefore three keys
+     *  data[i].year; a 4 digit value
+     *  data[i].month; a digit for the month (1 to 12, without zero-padding the single-digit numbers)
+     *  data[i].variance; a float describing the discrepancy between the measurement and the baseTemperature value
      */
-    
-    console.log(data);
 
+    // FORMAT DATA
+    // format the data to have date objects for the x scale's domain
+    data.forEach((d)=> {
+        d["year"] = parseTimeYear(d["year"]);
+    });
+
+    // DOMAIN
+    // the scales' domains are defined by the minimum and maximum values of the month and year
+    // for the xScale compute the min and max values separately, as to retrieve the min and max years, which are used in the attributes of the rectangle elements
+    let maxScale = d3.max(data, d => d["year"]);
+    let minScale = d3.min(data, d => d["year"]);
+
+    // the width of the rectangle elements is computed based on the four digit year format
+    let maxYear = maxScale.getFullYear();
+    let minYear = minScale.getFullYear();
+
+    xScale
+        .domain([minScale, maxScale]);
+
+    // for the y scale, include a domain equal to the discrete values of the months of the year
+    // the scaleBands evenly distributes the space allowed by the range with the discrete options
+    yScale 
+        .domain(["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]);
+    
+    // AXES
+    // initialize the axes based on the scales
+    const xAxis = d3 
+                    .axisBottom(xScale)
+                    // alter the format of the tick labels to show the full four digits of the year
+                    .tickFormat(d3.timeFormat("%Y"))
+                    // show a tick every 10 years (instead of a default number of 10 ticks)
+                    .ticks(d3.timeYear.every(10));
+
+    const yAxis = d3 
+                    .axisLeft(yScale);
+
+
+    // include the axes through group element
+    canvasContents
+        .append("g")
+        .attr("id", "x-axis")
+        // for the horizontal axis, position it at the bottom of the area defined by the SVG canvas
+        .attr("transform", `translate(0, ${height})`)
+        .call(xAxis);
+
+    canvasContents
+        .append("g")
+        .attr("id", "y-axis")
+        .call(yAxis);
+
+    // TOOLTIP
+    // incllude a tooltup with a div element
+    const tooltip = container
+                        .append("div")
+                        .attr("id", "tooltip");
+
+    // PLOT MAP
+    // include rectangle elements 
+    // their position is decided horizontally according to the date object
+    // vertically according to their month only
+    // their fill color is included according to the value found in the data.variance field (technically baseTemperature + data.variance)
+    canvasContents
+        .selectAll("rect")
+        .data(data)
+        .enter()
+        .append("rect")
+        // include two listeners for the mouseenter and mouseout events
+        // as the cursor hovers on the element, transition the tooltip into view, with the text describing the rectangle element
+        // as the cursor leaves, transition the tooltip out of sight
+        // important: the event listener accepts as argument the data being processed (d), which is then used in the text of the tooltip
+        .on("mouseenter", (d) => {
+            tooltip 
+                // alter the opacity to make the tooltip visible
+                .style("opacity", 1)
+                // position the tooltip close to the cursor, using the d3.event object
+                .style("left", `${d3.event.layerX}px`)
+                // as the y scale is offset by the margin value, include the margin value to have the tooltip close to the actual hovered cell
+                .style("top", `${d3.event.layerY + mapMarginTop}px`)
+                .text(() => {
+                    // d["year"], as it is processed through the parse function, represents an instance of the date object
+                    // getFullYear() allows to retrieve the four-digit year 
+                    let year = d["year"].getFullYear();
+                    // d["variance"] allows instead to retrieve the difference in temperature from the base temperature
+                    // limit the number of digits following the decimal point
+                    let temperature = (d["variance"] + 8.66).toFixed(3);
+                    // display in the tooltip the year, followed by temperature of the corresponding cell
+                    return `${year} ${temperature}`;
+            });
+        })
+        .on("mouseout", () => {
+            tooltip
+                .style("opacity", 0);
+        })
+        // the x coordinate of each element is determined by the individual instance of the date object, which is parsed according to the year
+        .attr("x", (d) => xScale(d["year"]))
+        // the y coordinate is determined the month of the measurement
+        // as the height of each cell is determined by the height of the map divided by 12, multiply that by the number of the month
+        // include the size of the rectangle as SVG elements are drawn top to bottom
+        .attr("y", (d) =>  ((height - mapMarginTop)/12) * d["month"] + legendValues.rectSize)
+        // a rectangle is included horizontally for each month, with as many elements as there are years matching that month
+        // the width of the individual element is therefore equal to the width, divided by the number of years with the measured month
+        .attr("width", (d) => width/(maxYear - minYear))
+        // the height is determined by the height of the map divided by 12
+        .attr("height", (d, i) => (height - mapMarginTop)/ 12)
+        // the fill is altered according to the temperature of the year and month
+        .attr("fill", (d, i) => {
+            let baseTemperature = 8.66;
+            let cellTemperature = d.variance + baseTemperature;
+
+            if(cellTemperature > legendValues.meaning[0]) {
+                return legendValues.fillColors[0];
+            }
+            else if(cellTemperature > legendValues.meaning[1]) {
+                return legendValues.fillColors[1];
+            }
+            else if(cellTemperature > legendValues.meaning[2]) {
+                return legendValues.fillColors[2];
+            }
+            else if(cellTemperature > legendValues.meaning[3]) {
+                return legendValues.fillColors[3];
+            }
+            else if(cellTemperature > legendValues.meaning[4]) {
+                return legendValues.fillColors[4];
+            }
+            else if(cellTemperature > legendValues.meaning[5]) {
+                return legendValues.fillColors[5];
+            }
+            else {
+                return legendValues.fillColors[6];
+            }
+        }) 
 }
