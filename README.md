@@ -42,15 +42,15 @@ Regardless, the look-around was worth the extra time. Analysing the data helps a
 
 For the project to pass all tests set by @freeCodeCamp, the project needs to fulfill a series of user stories, here summarised.
 
-- [ ] there exist a title with `id="title"`;
+- [x] there exist a title with `id="title"`;
 
-- [ ] there exist a description with `id="description"`;
+- [x] there exist a description with `id="description"`;
 
 - [ ] there exist axes with `id="x-axis"` and `id="y-axis"` respectively;
 
 - [ ] there exist `rect` elements with `class="cell"` for the different data points;
 
-- [ ] there exist at least 4 different fill colors;
+- [x] there exist at least 4 different fill colors;
 
 - [ ] each cell should carry three properties: `data-month`, `data-year`, `data-temp`, respectively holding information regarding the month, year and tempeature;
 
@@ -62,9 +62,9 @@ For the project to pass all tests set by @freeCodeCamp, the project needs to ful
 
 - [ ] tick labels on the x-axis need to display the year, from 1754 and 2015;
 
-- [ ] there exist a legend with `id="legend"`;
+- [x] there exist a legend with `id="legend"`;
 
-- [ ] the legend ought to contain `rect` elements. These should use at least 4 different fill colors;
+- [x] the legend ought to contain `rect` elements. These should use at least 4 different fill colors;
 
 - [ ] upon hovering on the `rect` elements of the visualization, it is possible to see a tooltip with `id="tooltip"`, displaying additional data;
 
