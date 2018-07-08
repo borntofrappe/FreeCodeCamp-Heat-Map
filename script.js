@@ -191,10 +191,13 @@ function drawHeatMap(data) {
                     // alter the format of the tick labels to show the full four digits of the year
                     .tickFormat(d3.timeFormat("%Y"))
                     // show a tick every 10 years (instead of a default number of 10 ticks)
-                    .ticks(d3.timeYear.every(10));
+                    .ticks(d3.timeYear.every(10))
+                    // remove the ticks at either end of the axis
+                    .tickSizeOuter(0);
 
     const yAxis = d3 
-                    .axisLeft(yScale);
+                    .axisLeft(yScale)
+                    .tickSizeOuter(0);
 
 
     // include the axes through group element
@@ -226,12 +229,17 @@ function drawHeatMap(data) {
         .data(data)
         .enter()
         .append("rect")
+        .attr("class", "cell")
+        .attr("data-month", (d) => d["month"])
+        .attr("data-year", (d) => d["year"])
+        .attr("data-temp", (d) => d["variance"] + 8.66)
         // include two listeners for the mouseenter and mouseout events
         // as the cursor hovers on the element, transition the tooltip into view, with the text describing the rectangle element
         // as the cursor leaves, transition the tooltip out of sight
         // important: the event listener accepts as argument the data being processed (d), which is then used in the text of the tooltip
         .on("mouseenter", (d) => {
             tooltip 
+                .attr("data-year", d["year"])
                 // alter the opacity to make the tooltip visible
                 .style("opacity", 1)
                 // position the tooltip close to the cursor, using the d3.event object
