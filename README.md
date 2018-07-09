@@ -55,25 +55,7 @@ For the project to pass all tests set by @freeCodeCamp, the project needs to ful
 - [x] each cell should carry three properties: `data-month`, `data-year`, `data-temp`, respectively holding information regarding the month, year and tempeature;
 
 - [ ] the dates in the attribute need to be within the range of the data;
-
-<!-- 
-// FAILED TEST
-
-The "data-month", "data-year" of each cell should be within the range of the data. 
-
-AssertionError: data-month should be at most 11: expected '12' to be at most 11
--->
-
 - [ ] each cell should be aligned to the corresponding month in the y-axis and the corresponding year in the x-axis;
-
-<!-- 
-// FAILED TEST
-
-My heat map should have cells that align with the corresponding month on the y-axis.
-TypeError: Cannot read property 'length' of null 
--->
-
-
 - [x] tick labels on the y-axis need to display the name of the month, in full;
 
 - [x] tick labels on the x-axis need to display the year, from 1754 and 2015;
@@ -152,3 +134,31 @@ function drawHeatMap(data) {
 
 Rectangle elements with `class="cell"` are used to display the data found in the array.
 
+Following the inclusion of the class and attributes specified by several user stories, the focus is on the coordinates of each rectangle element.
+
+- for the horizontal coordinate, this is set according to the year of each measure, passed in the defined scale. The scale takes the date object and outputs it accordingly along the horizontal axis;
+
+- for the vertical coordinate, the rectangle elements ought to be displayed according to their month values. Taking into account the individual height of the rectangles (as the height of the allocated area divided by twelve), it is a plain matter of placing each row at a distance from the top defined by this measure and multiplied by the number of the month;
+- as mentioned for the vertical coordinate, the height is computed as the height of the allocated area divided by 12. The allocated area needs to account for the height of the SVG canvas, but also the margin included at the top;
+- the width of the rectangle elements is a fraction of the total width of the SVG canvas. As each row shows the different measurements for each month, the fraction is determined by the number of years for which the observation is present. It is the answer to the contrived question: how many January are measured.
+
+
+# Issues
+
+This section plans to list the tests not passing the freecodecamp suite, as to then solve each one of them and clear pending issues to close the project.
+
+**Failed Test #1**
+
+> The "data-month", "data-year" of each cell should be within the range of the data. 
+
+With the following error message:
+
+> AssertionError: data-month should be at most 11: expected '12' to be at most 11
+
+**Failed Test #2**
+
+> My heat map should have cells that align with the corresponding month on the y-axis.
+
+With the following error message:
+
+> TypeError: Cannot read property 'length' of null 
