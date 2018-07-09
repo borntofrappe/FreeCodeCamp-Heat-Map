@@ -2,7 +2,7 @@ Link to the work-in-progress pen right [here](https://codepen.io/borntofrappe/pe
 
 # Preface
 
-For the third project in the line of "Data Visualization Projects", @freeCodeCamp challenges us to visualize data through a _heat map_. Data which contemplates the global land-surface temperature, as shown in the [example pen](https://codepen.io/freeCodeCamp/full/JEXgeY).
+For the third project in the line of "Data Visualization Projects", the task is the visualization of some arbitrary data through a _heat map_. Data which contemplates the global land-surface temperature, as shown in the [example pen](https://codepen.io/freeCodeCamp/full/JEXgeY).
 
 The graph does seem to deviate from the previous challenges, which instead where quite similar to one another. That however doesn't remotely imply that the knowledge so far obtained and implemented can't be applied to the new task. By far.
 
@@ -88,17 +88,67 @@ TypeError: Cannot read property 'length' of null
 
 # First Thoughts
 
-For the design of the page, the same style used for the [previous](https://codepen.io/borntofrappe/pen/mKGZaO) [proejcts](https://codepen.io/borntofrappe/pen/ERzybV) is here replicated for the overall design of the page. This helps cut down the time spent on colors and fonts and also helps maintaining a style throughout the different data viz challenges.
+For the design of the page, the same style used for the [previous](https://codepen.io/borntofrappe/pen/mKGZaO) [proejcts](https://codepen.io/borntofrappe/pen/ERzybV) is used for the overall look of the page. This helps cut down the time spent on colors and fonts, while also helps maintaining a style throughout the different data viz challenges. It may come to no surprise, but the common style of all projects is self-serving, as all data viz will be later included in a single page, which allows to toggle between different visualization.
 
 A tad more time is spent on picking additional colors, specifically for the fill color of each rectangle element. As visible in the referenced pen, these are to be included to represent the temperature and its varying intensity. The intensity is visually described by cold and hot colors, going from blue hues to red-hot picks. 
 
 The thresholds at which the fill colors are specified represent interesting measures. Indeed, the visualization can include the amounts specified in the example pen (2.8, 3.9 and so forth), but additional care can be included in selecting the most appropriate digits.
 
-From the actual perspective of completing the project though, a rough measure is computed from the average value of the measured temperature. Starting from 1.6 degrees the amount is doubled, tripled to consider the possible temperatures with selected hues.
+From the actual perspective of completing the project though, a rough measure is computed from the average value of the measured temperature. Starting from 1.6 degrees the amount is doubled, tripled to consider the possible temperatures with selected hues. This quick solution allows to dedicate more time on the actual technical challenges behind the project.
 
 As I mentioned ealier, the project does look different from the previous data visualization. The rectangle elements included side by side seem to provide the most challenging aspect of the visualization, while the difference in color seems to be rather easy to implement.
 
-<!--
 # Update
-include this section upon hitting arbitrary milestones in the project (a road-block, the completion of the project)
--->
+
+**scaleBand**
+
+After quite some time spent tweaking two time-scales, I realized that the vertical axis is primed for another type of scale which is supported by d3.js, namely a `scaleBand`. This is used to display discrete values, dividing the allocated space in even intervals, and it is therefore the ideal fit in order to display twelve months, across the y-axis.
+
+The range of a `scaleBand` is not different from the range used for a `scaleTime`, nor the range of a `scaleLinear` for that matter. The only precaution taken in the project is the inclusion of some margin, used to avoid any overlap between the heat map and the legend positioned atop the SVG canvas. Instead of setting a range from 0 to the height of the canvas, the range of the specific project goes therefore from the arbitrary margin to the height of the canvas. The arbitrary margin is calculated as the height of the rectangles used in the legend, plus the height of the text beneath each rectangle, plus some comfortable spacing. 
+
+```JS
+let mapMarginTop = 55;
+const yScale = d3
+                .scaleBand()
+                .range([mapMarginTop, height]);
+```
+
+Unlike the range, the domain of a `scaleBand` does differ from previous scales. Indeed, as the scale is set to display discrete values, the twelve months are included in an array, which is then passed as the argument of the `domain()` function.
+
+```JS
+yScale 
+        .domain(["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]);
+
+```
+
+**data**
+
+The function which is called in response to the XMLHttp request does not pass as argument the entire JSON object. Instead, it passes the field containing the array of data. This is done to more easily access the multiple data points, and rapidly access their diferrent values, in terms of month, year of measurement and measurement of the variance.
+
+```JS
+// XMLHTTPREQUEST
+const URL = "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/global-temperature.json";
+
+const request = new XMLHttpRequest();
+request.open("GET", URL, true);
+request.send();
+request.onload = function() {
+    let json = JSON.parse(request.responseText);
+    drawHeatMap(json.monthlyVariance);
+}
+```
+
+By including the array, the `drawHeatMap()` function has easy reach into the data required to draw the different rectangle elements. Such as with the following snippet, which parses the year of the measurement to a date object.
+
+```JS
+function drawHeatMap(data) {
+  data.forEach((d)=> {
+        d["year"] = parseTimeYear(d["year"]);
+  });
+}
+```
+
+**rect**
+
+Rectangle elements with `class="cell"` are used to display the data found in the array.
+
