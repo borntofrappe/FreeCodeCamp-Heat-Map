@@ -140,21 +140,23 @@ const request = new XMLHttpRequest();
 request.open("GET", URL, true);
 request.send();
 // on load call a function to draw the scatter plot 
-// pass as argument the object containing the two values, one of which the data array with 3000+ measurements
+// pass as argument the two fields of the response
 request.onload = function() {
     let json = JSON.parse(request.responseText);
-    drawHeatMap(json.monthlyVariance);
+    drawHeatMap(json.baseTemperature, json.monthlyVariance);
 }
 
-function drawHeatMap(data) {
+function drawHeatMap(baseTemperature, data) {
     /**
      * json is an object with two fields
      * json.baseTemperature; a single float value for the presumably global average
      * json.monthlyVariance; an array nesting multiple objects with the actual data
      * 
-     * the XMLHttpRequest passes as argument this last field, the array of objects
+     * the XMLHttpRequest passes as argument the two fields separately
      * 
-     *  data has therefore three keys
+     *  baseTemperature refers to the overarching base temperature
+     * 
+     *  data refers to an array of objects, each with three keys
      *  data[i].year; a 4 digit value
      *  data[i].month; a digit for the month (1 to 12, without zero-padding the single-digit numbers)
      *  data[i].variance; a float describing the discrepancy between the measurement and the baseTemperature value
@@ -232,7 +234,7 @@ function drawHeatMap(data) {
         .attr("class", "cell")
         .attr("data-month", (d) => d["month"])
         .attr("data-year", (d) => d["year"])
-        .attr("data-temp", (d) => d["variance"] + 8.66)
+        .attr("data-temp", (d) => d["variance"] + baseTemperature)
         // include two listeners for the mouseenter and mouseout events
         // as the cursor hovers on the element, transition the tooltip into view, with the text describing the rectangle element
         // as the cursor leaves, transition the tooltip out of sight
@@ -252,7 +254,7 @@ function drawHeatMap(data) {
                     let year = d["year"].getFullYear();
                     // d["variance"] allows instead to retrieve the difference in temperature from the base temperature
                     // limit the number of digits following the decimal point
-                    let temperature = (d["variance"] + 8.66).toFixed(3);
+                    let temperature = (d["variance"] + baseTemperature).toFixed(3);
                     // display in the tooltip the year, followed by temperature of the corresponding cell
                     return `${year} ${temperature}`;
             });
@@ -274,7 +276,6 @@ function drawHeatMap(data) {
         .attr("height", (d, i) => (height - mapMarginTop)/ 12)
         // the fill is altered according to the temperature of the year and month
         .attr("fill", (d, i) => {
-            let baseTemperature = 8.66;
             let cellTemperature = d.variance + baseTemperature;
 
             if(cellTemperature > legendValues.meaning[0]) {
