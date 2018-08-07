@@ -1,29 +1,29 @@
-/** SETUP
+/** SETUP, before the data
  * select the element in which to plot the data visualization
  * include a title and a description through header elements 
- * include the frame of an SVG canvas, in which to draw the data as it is queried
+ * include the frame of an SVG canvas, in which to draw the data when it is later retrieved
  * include a legend through rect elements (the legend is here included following the SVG canvas as it is drawn with SVG elements, in the canvas itself)
  * define the scales for the horizontal and vertical axes
  * define the range for both axes. These rely on the width and height values of the SVG and can be set prior to retrieving the data
  */
 
-// SELECT 
+// SELECT CONTAINER
 const container = d3.select(".container");
 
-// TITLE 
+// INCLUDE TITLE 
 container
     .append("h1")
     .attr("id", "title")
     .text("Monthly Global Land-Surface Temperature 🌍");
 
-// DESCRIPTION
+// INCLUDE DESCRIPTION
 container
     .append("h3")
     .attr("id", "description")
     .text("1753 - 2015: base temperature 8.66℃");
 
 // FRAME
-// define a measure for the margin, included to frame the contents of the SVG inside of the SVG canvas itself by an arbitrary amount
+// define a measure for the margin, included to frame the contents of the SVG inside of the SVG canvas itself
 // this to avoid any cropping, especially for the axes
 const margin = {
   top: 20,
@@ -43,7 +43,7 @@ const width = 800 - margin.left - margin.right,
 const containerCanvas = container
                           .append("svg")
                           // by adding the respective margins, the SVG canvas assumes the dimensions defined by the arbitrary values (800, 400)
-                          // anything using the width and height values will be drawn inside of the canvas (but needs to be first positioned inside of the frame by a measure equal to the margins. This is achieved with a group element) 
+                          // anything using the width and height values will be drawn inside of the canvas (but needs to be first positioned inside of the frame by a measure equal to the margins. This feat is accomplished with a <g>roup element) 
                           .attr("viewBox", `0 0 ${width + margin.left + margin.right}  ${height + margin.top + margin.bottom}`);
 
 // include a group element in which to position the SVG elements 
@@ -61,6 +61,7 @@ const canvasContents = containerCanvas
 const legend = containerCanvas
                 .append("g")
                 .attr("id", "legend")
+                // translate the legend to the right of the SVG (its contents are not cropped as they are included from the right edge inward) 
                 .attr("transform", `translate(${width}, ${margin.top})`);
 
 // define in an object two arrays for the values of the legend and the size of the rectangle elemets
@@ -73,7 +74,7 @@ const legendValues = {
     rectSize: 30
 }
 
-// in the group element which represents the legend apped one rectangle element for each fill color
+// in the group element which represents the legend append one rectangle element for each fill color
 legend
     .selectAll("rect")
     .data(legendValues.fillColors)
@@ -84,7 +85,7 @@ legend
     .attr("height", legendValues.rectSize)
     // position each rectangle elements to the left of the previous one
     // as the group element is positioned at the end of the SVG canvas, this allows to draw all rectangle inside of the canvas and ending at the precise spot described by the group element
-    .attr("x", (d, i) => i*-legendValues.rectSize)
+    .attr("x", (d, i) => i*(-legendValues.rectSize))
     // position the rectangle elements at the top of the svg canvas
     .attr("y", 0)
     // give each rectangle element a color as specified by the array of fillColors
@@ -96,8 +97,9 @@ legend
     .data(legendValues.meaning)
     .enter()
     .append("text")
-    // arrange the text elements horizontally, just like the rectangle elements, and vertically, below the rectangle elements themselves
-    .attr("x", (d, i) => i*-legendValues.rectSize)
+    // arrange the text elements horizontally, just like the rectangle elements
+    .attr("x", (d, i) => i*(-legendValues.rectSize))
+    // arrange the text vertically, below the rectangle elements
     .attr("y", legendValues.rectSize + 15)
     .style("font-size", "0.7rem")
     // include the text specified by the array of values
@@ -130,7 +132,7 @@ const parseTimeYear = d3
  * create an instance of an XMLHttpRequest object, to retrieve the data at the provided URL
  * upon receiving the data, set the domain of the scales and create the connected axes
  * plot the chart by including rectangle elements in the SVG
- * include a tooltip through a div (the tooltip should appear and disappear on the basis of the mouseenter and mouseout events, on the circle elements)
+ * include a tooltip through a div (the tooltip should appear and disappear on the basis of the mouseenter and mouseout events, on the rectangle elements)
  */
 
 // XMLHTTPREQUEST
@@ -139,14 +141,14 @@ const URL = "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData
 const request = new XMLHttpRequest();
 request.open("GET", URL, true);
 request.send();
-// on load call a function to draw the scatter plot 
+// on load call a function to draw the heath map
 // pass as argument the two fields of the response
 request.onload = function() {
     let json = JSON.parse(request.responseText);
     drawHeatMap(json.baseTemperature, json.monthlyVariance);
 }
 
-function drawHeatMap(baseTemperature, data) {
+function drawHeatMap(baseValue, data) {
     /**
      * json is an object with two fields
      * json.baseTemperature; a single float value for the presumably global average
@@ -154,7 +156,7 @@ function drawHeatMap(baseTemperature, data) {
      * 
      * the XMLHttpRequest passes as argument the two fields separately
      * 
-     *  baseTemperature refers to the overarching base temperature
+     *  baseValue refers to the overarching base temperature
      * 
      *  data refers to an array of objects, each with three keys
      *  data[i].year; a 4 digit value
@@ -202,7 +204,7 @@ function drawHeatMap(baseTemperature, data) {
                     .tickSizeOuter(0);
 
 
-    // include the axes through group element
+    // include the axes through group elements
     canvasContents
         .append("g")
         .attr("id", "x-axis")
@@ -234,7 +236,7 @@ function drawHeatMap(baseTemperature, data) {
         .attr("class", "cell")
         .attr("data-month", (d) => d["month"])
         .attr("data-year", (d) => d["year"])
-        .attr("data-temp", (d) => d["variance"] + baseTemperature)
+        .attr("data-temp", (d) => d["variance"] + baseValue)
         // include two listeners for the mouseenter and mouseout events
         // as the cursor hovers on the element, transition the tooltip into view, with the text describing the rectangle element
         // as the cursor leaves, transition the tooltip out of sight
@@ -249,12 +251,12 @@ function drawHeatMap(baseTemperature, data) {
                 // as the y scale is offset by the margin value, include the margin value to have the tooltip close to the actual hovered cell
                 .style("top", `${d3.event.layerY + mapMarginTop}px`)
                 .text(() => {
-                    // d["year"], as it is processed through the parse function, represents an instance of the date object
+                    // d["year"], as it is processed through the parse function, represents an instance of a date object
                     // getFullYear() allows to retrieve the four-digit year 
                     let year = d["year"].getFullYear();
                     // d["variance"] allows instead to retrieve the difference in temperature from the base temperature
                     // limit the number of digits following the decimal point
-                    let temperature = (d["variance"] + baseTemperature).toFixed(3);
+                    let temperature = (d["variance"] + baseValue).toFixed(3);
                     // display in the tooltip the year, followed by temperature of the corresponding cell
                     return `${year} ${temperature}`;
             });
@@ -271,13 +273,15 @@ function drawHeatMap(baseTemperature, data) {
         .attr("y", (d) =>  ((height - mapMarginTop)/12) * d["month"] + legendValues.rectSize)
         // a rectangle is included horizontally for each month, with as many elements as there are years matching that month
         // the width of the individual element is therefore equal to the width, divided by the number of years with the measured month
-        .attr("width", (d) => width/(maxYear - minYear))
+        .attr("width", width/(maxYear - minYear))
         // the height is determined by the height of the map divided by 12
-        .attr("height", (d, i) => (height - mapMarginTop)/ 12)
+        .attr("height", (height - mapMarginTop)/ 12)
         // the fill is altered according to the temperature of the year and month
         .attr("fill", (d, i) => {
-            let cellTemperature = d.variance + baseTemperature;
+            let cellTemperature = d.variance + baseValue;
 
+            // define if statements from the highest to the lowest value
+            // to avoid the first conditional from preventing the execution of the following statements
             if(cellTemperature > legendValues.meaning[0]) {
                 return legendValues.fillColors[0];
             }
