@@ -1,15 +1,29 @@
 @import url("https://fonts.googleapis.com/css?family=Lato");
+
+/* include the chosen font and colors:
+- lato for simple and readable text
+- #252525 for tone-down black
+- #eee for down-played white
+*/
+
+:root {
+  --font: 'Lato', sans-serif;
+  --color-dark: #252525;
+  --color-light: #eee;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
+
 body {
   min-height: 100vh;
   width: 100%;
-  font-family: 'Lato', sans-serif;
-  color: #eee;
-  background: #252525;
+  font-family: var(--font);
+  color: var(--color-dark);
+  background: var(--color-dark);
 }
 
 .container {
@@ -19,52 +33,58 @@ body {
   width: 85vw;
   padding: 1rem;
   margin: 2rem auto;
-  color: #252525;
-  background: #eee;
-  box-shadow: 6px 8px 0 #252525, 14px 14px 0 #eee;
+  background: var(--color-light);
+  /* include two shadows with a solid color, to create the effect of having another card lying below the existing one */
+  box-shadow: 6px 8px 0 var(--color-dark), 14px 14px 0 var(--color-light);
   /* include a simple animation which introduces the card from the bottom of the screen */
   animation: introduceCard 1s cubic-bezier(.22,-0.3,.68,1.44) both;
-  position: relative;
 }
+
 .container h1#title {
   font-size: 2rem;
   text-transform: capitalize;
   text-align: center;
   margin: 1rem;
-  /* include a simple animation which introduces the main header from the top of the screen, right before the card has finished animating */
+  /* include a simple animation which introduces the main header from the top of the screen, right before the card has finished its own animation */
   animation: introduceElement 0.5s 0.8s cubic-bezier(.22,-0.3,.68,1.44) both;
 }
+
 .container h3#description {
   text-align: center;
-  letter-spacing: 0.2rem;
   text-transform: uppercase;
+  letter-spacing: 0.2rem;
   font-weight: 300;
   /* include a simple animation which introduces the description from the top of the screen, alongside the main header */
   animation: introduceElement 0.5s 0.8s cubic-bezier(.22,-0.3,.68,1.44) both;
 }
 .container svg {
   /* include a simple animation which introduces the svg from the top of the screen, right after the headers */
-  animation: introduceElement 0.5s 0.8s cubic-bezier(.22,-0.3,.68,1.44) both;
+  animation: introduceElement 0.5s 0.85s cubic-bezier(.22,-0.3,.68,1.44) both;
 }
+
 .container div#tooltip {
-  /* absolute position the div used as tooltip
-  the left and bottom properties are set in the JS script, to move the element right next to the data point it ought to represent */
+  /* 
+  absolute position the div used as tooltip
+  the left and bottom properties are set in the JS script, to move the element right next to the data point it ought to represent 
+  */
   position: absolute;
   border-radius: 4px;
-  color: #eee;
-  background: #252525;
+  color: var(--color-light);
+  background: var(--color-dark);
   padding: 1rem 2rem;
   font-size: 1.5rem;
-  /* pointer-events set to none as to avoid hovering on the tooltip and preventing the hover state on the circle elements behind it */
+  /* pointer-events set to none as to avoid hovering on the tooltip and preventing the hover state on the rectangle elements behind it */
   pointer-events: none;
   /* set opacity to 0 and change it to 1 on hover */
   opacity: 0;
   /* transition to smoothen the change in opacity  */
   transition: opacity 0.2s ease-out;
 }
-/* define the animations to introduce page's contents
+
+/* 
+define the animations to introduce page's contents
 the card is animated bottom up
-the elements (title, legend, svg) are animated top down  
+the other elements (title, legend, svg) are animated top down  
 */
 
 @keyframes introduceCard {
@@ -94,9 +114,7 @@ the elements (title, legend, svg) are animated top down
   }
 }
 
-/* on smaller screen sizes
-- reduce the font-size of the headers
-*/
+/* for smaller viewports reduce the font-size of the headers */
 @media (max-width: 700px) {
   .container h1#title {
     font-size: 1.8rem;
