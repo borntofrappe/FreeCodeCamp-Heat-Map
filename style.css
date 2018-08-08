@@ -68,6 +68,7 @@ body {
   the left and bottom properties are set in the JS script, to move the element right next to the data point it ought to represent 
   */
   position: absolute;
+  max-width: 250px;
   border-radius: 4px;
   color: var(--color-light);
   background: var(--color-dark);

@@ -260,11 +260,16 @@ function drawHeatMap(baseValue, data) {
                     // d["year"], as it is processed through the parse function, represents an instance of a date object
                     // getFullYear() allows to retrieve the four-digit year 
                     let year = d["year"].getFullYear();
+                    let month = formatTimeMonth(d["month"]);
                     // d["variance"] allows instead to retrieve the difference in temperature from the base temperature
                     // limit the number of digits following the decimal point
                     let temperature = (d["variance"] + baseValue).toFixed(3);
                     // display in the tooltip the year, followed by temperature of the corresponding cell
-                    return `${year} ${temperature}`;
+                    return `
+                    Year: ${year}
+                    Month: ${month}
+                    Degrees: ${temperature}
+                    `;
             });
         })
         .on("mouseout", () => {
