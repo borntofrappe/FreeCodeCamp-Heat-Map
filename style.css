@@ -66,6 +66,7 @@ body {
   /* 
   absolute position the div used as tooltip
   the left and bottom properties are set in the JS script, to move the element right next to the data point it ought to represent 
+  max-width to avoid having the text displayed in a single line
   */
   position: absolute;
   max-width: 250px;
@@ -87,7 +88,6 @@ define the animations to introduce page's contents
 the card is animated bottom up
 the other elements (title, legend, svg) are animated top down  
 */
-
 @keyframes introduceCard {
   0% {
     transform: translateY(100vh);

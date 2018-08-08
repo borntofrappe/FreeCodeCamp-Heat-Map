@@ -7,16 +7,16 @@
  * define the range for both axes. These rely on the width and height values of the SVG and can be set prior to retrieving the data
  */
 
-// SELECT CONTAINER
+// CONTAINER
 const container = d3.select(".container");
 
-// INCLUDE TITLE 
+// TITLE 
 container
     .append("h1")
     .attr("id", "title")
     .text("Monthly Global Land-Surface Temperature 🌍");
 
-// INCLUDE DESCRIPTION
+// DESCRIPTION
 container
     .append("h3")
     .attr("id", "description")
@@ -33,13 +33,13 @@ const margin = {
     left: 60
 }
 
-// define width and height measure deducting the arbitrary values of the respective margins
-// this allows to later reference the width and height values and have them refer to the area inside of the SVG canvas, where the elements are not cropped out
+// define the width and height deducting the arbitrary values of the respective margins
+// this to later reference the width and height values and have them refer to the area inside of the SVG canvas, where the elements are not cropped out
 const width = 800 - margin.left - margin.right,
       height = 400 - margin.top - margin.bottom;
 
 // include an SVG with a viewbox attribute dictating the width to height ratio
-// the width property is included in the stylesheet and the height is included by proxy through the ratio defined by the viewbox itself
+// the width property is included in the stylesheet and the height is included on the basis of the ratio defined by the viewbox itself
 const containerCanvas = container
                         .append("svg")
                         // by adding the respective margins, the SVG canvas assumes the dimensions defined by the arbitrary values (800, 400)
@@ -54,7 +54,7 @@ const canvasContents = containerCanvas
 
 // LEGEND
 // for the legend include rect elements with different fill color
-// as the legend makes use of SVG syntax, the element is included _after_ the SVG has been included in the page
+// as the legend makes use of SVG syntax, the element is included _after_ the SVG has been already defined in the page
 // the legend is appended to the SVG itself
 
 // append the legend as a group element, positioned in the top right of the SVG canvas
@@ -64,9 +64,7 @@ const legend = containerCanvas
                 // translate the legend to the right of the SVG (its contents are not cropped as they are included from the right edge inward) 
                 .attr("transform", `translate(${width}, ${margin.top})`);
 
-// define in an object two arrays for the values of the legend and the size of the rect elements
-// an array describing the colors of each rect element
-// an array describing the values
+// define in an object two fields for the values of the legend and one field for the size of the elements it nests
 const legendValues = {
     // the array are sorted from warmest color/highest value to coldest color/lowest value
     fillColors: ["#e83a30", "#ee6d66", "#f4a09c", "#faddd1", "#a39cf4", "#7166ee", "#4030e8"],
@@ -80,7 +78,7 @@ legend
     .data(legendValues.fillColors)
     .enter()
     .append("rect")
-    // size the rect elements arbitrarily
+    // size the rect elements
     .attr("width", legendValues.size)
     .attr("height", legendValues.size)
     // position each rect elements to the left of the previous one
@@ -91,19 +89,19 @@ legend
     // give each rect element a color as specified by the array of fillColors
     .attr("fill", (d, i) => legendValues.fillColors[i]);
 
-// with text elements include text below each rect element of the legend
+// with text elements include text below each rectangle of the legend
 legend 
     .selectAll("text")
     .data(legendValues.meaning)
     .enter()
     .append("text")
-    // arrange the text elements horizontally, just like the rect elements
+    // arrange the text elements horizontally, just like the rectangles
     .attr("x", (d, i) => i*(-legendValues.size))
-    // arrange the text vertically, below the rect elements
+    // arrange the text vertically, below the rectangles
     .attr("y", legendValues.size + 10)
     .style("font-size", "0.7rem")
     // include the text specified by the array of values
-    .text((d, i) => legendValues.meaning[i] + "°");
+    .text((d, i) => `${legendValues.meaning[i]}°`);
 
 
 // SCALES
@@ -115,27 +113,29 @@ const xScale = d3
 
 // for the vartical scale include a band scale (used to display discrete values, evenly spaced in the axis)
 // the discrete values are stored in an array describing the months of the year (from Jan to Dec)
-// as the months are introduced in order, there's no need to reverse the range 
+const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-// include a margin equal to the size of the legend, as to avoid overlapping between the SVG heat map and the legend
-let mapMarginTop = 55;
+// as the months are introduced in order, there's no need to reverse the range 
+// instead of starting from 0 though, have the range take notice of the size of the legend, as to avoid overlapping between the SVG heat map and the legend itself
 const yScale = d3
                 .scaleBand()
                 .range([legendValues.size * 2, height]);
 
-// define a parse function to properly format the data passed in with the request 
+// define parse functions to properly format the data passed in with the request (for the year and for the month)
 const parseTimeYear = d3
                         .timeParse("%Y");
 
 const parseTimeMonth = d3
                         .timeParse("%m");
 
+// define a formatting function to dosplay integers as months, with their full name
 const formatTimeMonth = d3 
                         .timeFormat("%B");
 
 /** DATA
  * create an instance of an XMLHttpRequest object, to retrieve the data at the provided URL
- * upon receiving the data, set the domain of the scales and create the connected axes
+ * upon receiving the data, interpret the data according to the parse function
+ * set the domain fpr both scales and create the connected axes
  * plot the chart by including rectangle elements in the SVG
  * include a tooltip through a div (the tooltip should appear and disappear on the basis of the mouseenter and mouseout events, on the rectangle elements)
  */
@@ -169,8 +169,8 @@ function drawHeatMap(baseValue, data) {
      *  data[i].variance; a float describing the discrepancy between the measurement and the baseTemperature value
      */
 
-    // FORMAT DATA
-    // format the data to have date objects for the x scale's domain
+    // DATA
+    // parse the data to have date objects for the year and month values of each data point
     data.forEach((d)=> {
         d["year"] = parseTimeYear(d["year"]);
         d["month"] = parseTimeMonth(d["month"]);
@@ -178,7 +178,8 @@ function drawHeatMap(baseValue, data) {
 
     // DOMAIN
     // the scales' domains are defined by the minimum and maximum values of the month and year
-    // for the xScale compute the min and max values separately, as to retrieve the min and max years, which are used in the attributes of the rectangle elements
+    // for the xScale compute the min and max values separately, as to retrieve the min and max years
+    // thse values are also used in the attributes of the rectangle elements
     let maxScale = d3.max(data, d => d["year"]);
     let minScale = d3.min(data, d => d["year"]);
 
@@ -192,7 +193,7 @@ function drawHeatMap(baseValue, data) {
     // for the y scale, include a domain equal to the discrete values of the months of the year
     // the scaleBands evenly distributes the space allowed by the range with the discrete options
     yScale 
-        .domain(["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]);
+        .domain(months);
     
     // AXES
     // initialize the axes based on the scales
@@ -207,6 +208,7 @@ function drawHeatMap(baseValue, data) {
 
     const yAxis = d3 
                     .axisLeft(yScale)
+                    // remove the ticks at either end of the axis
                     .tickSizeOuter(0);
 
 
@@ -224,7 +226,7 @@ function drawHeatMap(baseValue, data) {
         .call(yAxis);
 
     // TOOLTIP
-    // incllude a tooltup with a div element
+    // include a tooltup with a div element
     const tooltip = container
                         .append("div")
                         .attr("id", "tooltip");
@@ -233,7 +235,7 @@ function drawHeatMap(baseValue, data) {
     // include rectangle elements 
     // their position is decided horizontally according to the date object
     // vertically according to their month only
-    // their fill color is included according to the value found in the data.variance field (technically baseTemperature + data.variance)
+    // their fill color is included according to the value found in the data.variance field (technically baseTemperature + monthlyVariance)
     canvasContents
         .selectAll("rect")
         .data(data)
@@ -249,22 +251,23 @@ function drawHeatMap(baseValue, data) {
         // important: the event listener accepts as argument the data being processed (d), which is then used in the text of the tooltip
         .on("mouseenter", (d) => {
             tooltip 
+                // d["year"], as it is processed through the parse function, represents an instance of a date object
+                // getFullYear() allows to retrieve the four-digit year
                 .attr("data-year", d["year"].getFullYear())
                 // alter the opacity to make the tooltip visible
                 .style("opacity", 1)
-                // position the tooltip close to the cursor, using the d3.event object
+                // position the tooltip close to the cursor, using d3.event.layerX and d3.event.layerY
                 .style("left", `${d3.event.layerX}px`)
                 // as the y scale is offset by the margin value, include the margin value to have the tooltip close to the actual hovered cell
                 .style("top", `${d3.event.layerY}px`)
                 .text(() => {
-                    // d["year"], as it is processed through the parse function, represents an instance of a date object
-                    // getFullYear() allows to retrieve the four-digit year 
+                    // retrieve the 4 digit year and full name months (this last one thanks to the formatting function, applied on the integer which represents the month)
                     let year = d["year"].getFullYear();
                     let month = formatTimeMonth(d["month"]);
-                    // d["variance"] allows instead to retrieve the difference in temperature from the base temperature
-                    // limit the number of digits following the decimal point
+                    // d["variance"] allows to retrieve the difference in temperature from the base temperature
+                    // limit the number of digits following the decimal point to 3
                     let temperature = (d["variance"] + baseValue).toFixed(3);
-                    // display in the tooltip the year, followed by temperature of the corresponding cell
+                    // display in the tooltip the year, followed by the month and the temperature of the corresponding cell
                     return `
                     Year: ${year}
                     Month: ${month}
@@ -277,22 +280,23 @@ function drawHeatMap(baseValue, data) {
                 .style("opacity", 0);
         })
         // the x coordinate of each element is determined by the individual instance of the date object, which is parsed according to the year
+        // include this instance according to the scale set up for the horizontal axis
         .attr("x", (d) => xScale(d["year"]))
         // the y coordinate is determined the month of the measurement
-        // as the height of each cell is determined by the height of the map divided by 12, multiply that by the number of the month
-        // include the size of the rectangle as SVG elements are drawn top to bottom
+        // include the month according to the scale set up for the vertical axis 
+        // however, as the domain of the yScale is a string representing the full name of the month, format the integer to display the different discrete values 
         .attr("y", (d) =>  yScale(formatTimeMonth(d["month"])))
         // a rectangle is included horizontally for each month, with as many elements as there are years matching that month
-        // the width of the individual element is therefore equal to the width, divided by the number of years with the measured month
+        // the width of the individual element is therefore equal to the width divided by the number of years with the measured month
         .attr("width", width/(maxYear - minYear))
         // the height is determined by the height of the map divided by 12
+        // in the computation of the height, take notice of the measure included to avoid overlapping with the legend
+        // since the range begins at [legendValues.size*2], the height is deducted this exact measure
         .attr("height", (height - legendValues.size*2)/ 12)
         // the fill is altered according to the temperature of the year and month
         .attr("fill", (d, i) => {
             let cellTemperature = d.variance + baseValue;
-
             // define if statements from the highest to the lowest value
-            // to avoid the first conditional from preventing the execution of the following statements
             if(cellTemperature > legendValues.meaning[0]) {
                 return legendValues.fillColors[0];
             }
